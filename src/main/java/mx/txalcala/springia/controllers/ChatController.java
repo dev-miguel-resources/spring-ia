@@ -1,7 +1,11 @@
 package mx.txalcala.springia.controllers;
 
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -29,6 +33,8 @@ public class ChatController {
 
     private final OpenAiChatModel openAiChatModel;
     private final ChatHistory chatHistory;
+    private final ChatMemory chatMemory;
+    private final JdbcChatMemoryRepository chatMemoryRepository;
 
     // Método 1: Consulta normal mediante un Prompt
     @GetMapping("/generate")
@@ -108,7 +114,8 @@ public class ChatController {
     }
 
     // Método 5: Modelo conversacional para referencias de contextos anteriores.
-    // Histórico de conversaciones
+    // Histórico de conversaciones mediante ChatHistory = mantiene todos los
+    // mensajes previos sin ninguna condición.
     @GetMapping("/generateConversation")
     public ResponseEntity<ResponseDTO<String>> generateConversation(@RequestParam String message) {
 
@@ -122,6 +129,37 @@ public class ChatController {
         // quiero obtener todos aquellos mensajes del id 1
         ChatResponse chatResponse = openAiChatModel.call(new Prompt(chatHistory.getAll("1")));
 
+        String result = chatResponse.getResult().getOutput().getText();
+
+        return ResponseEntity.ok(new ResponseDTO<>(200, "success", result));
+    }
+
+    // Método 6: Utiliza un default size de 20 mensajes como máximo, luego
+    // sobreescribe el más antiguo. Formato: FIFO
+    @GetMapping("/memory")
+    public ResponseEntity<ResponseDTO<String>> memory(@RequestParam String message) {
+        chatMemory.add("1", List.of(new UserMessage(message)));
+
+        // recuperar los mensajes con el alias 1.
+        ChatResponse chatResponse = openAiChatModel.call(new Prompt(chatMemory.get("1")));
+        String result = chatResponse.getResult().getOutput().getText();
+
+        return ResponseEntity.ok(new ResponseDTO<>(200, "success", result));
+    }
+
+    @GetMapping("/memoryrepo")
+    public ResponseEntity<ResponseDTO<String>> memoryRepo(@RequestParam String username,
+            @RequestParam String message) {
+
+        ChatMemory chatMemoryRepo = MessageWindowChatMemory.builder()
+                .chatMemoryRepository(chatMemoryRepository)
+                .maxMessages(5) // FIFO
+                .build();
+
+        chatMemoryRepo.add(username, List.of(new UserMessage(message)));
+
+        // recuperar los mensajes con el username requerido
+        ChatResponse chatResponse = openAiChatModel.call(new Prompt(chatMemory.get(username)));
         String result = chatResponse.getResult().getOutput().getText();
 
         return ResponseEntity.ok(new ResponseDTO<>(200, "success", result));
