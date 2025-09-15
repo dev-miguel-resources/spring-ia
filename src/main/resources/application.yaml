@@ -6,7 +6,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   ai:
     openai:
-      api-key: TU_API_KEY # llave de open ia platform
+      api-key: TU_API_KEY # llave de open-ia platform
     vectorstore:
       chroma:
         initialize-schema: true
