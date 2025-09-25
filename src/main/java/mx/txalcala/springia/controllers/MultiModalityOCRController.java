@@ -1,8 +1,6 @@
 package mx.txalcala.springia.controllers;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.springframework.ai.chat.messages.UserMessage;
@@ -11,7 +9,6 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiImageModel;
 import org.springframework.ai.openai.OpenAiImageOptions;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.image.ImagePrompt;
 import org.springframework.core.io.ByteArrayResource;
@@ -30,92 +27,95 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MultiModalityOCRController {
 
-    private final OpenAiChatModel openAiChatModel;
-    private final OpenAiImageModel openAiImageModel;
+        private final OpenAiChatModel openAiChatModel;
 
-    @GetMapping
-    public String multimodality() {
-        ClassPathResource classPathResource = new ClassPathResource("/images/image1.jpg");
+        // Modelo de Imágenes: Dall-e con la técnica de OCR
+        private final OpenAiImageModel openAiImageModel;
 
-        // Construir el mensaje que hará de prompt.
-        UserMessage userMessage = UserMessage.builder()
-                .text("¿Explicame que ves en esta imagen? e inventame una historia alrededor de ello")
-                .media(new Media(MimeTypeUtils.IMAGE_JPEG, classPathResource)).build();
+        @GetMapping
+        public String multimodality() {
+                ClassPathResource classPathResource = new ClassPathResource("/images/image1.jpg");
 
-        // Enviar el prompt (mensaje + imagen) al modelo de chat
-        ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
+                // Construir el mensaje que hará de prompt.
+                UserMessage userMessage = UserMessage.builder()
+                                .text("¿Explicame que ves en esta imagen? e inventame una historia alrededor de ello")
+                                .media(new Media(MimeTypeUtils.IMAGE_JPEG, classPathResource)).build();
 
-        // Extraer el resultado en texto
-        String result = chatResponse.getResult().getOutput().getText();
+                // Enviar el prompt (mensaje + imagen) al modelo de chat
+                ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
 
-        return result;
-    }
+                // Extraer el resultado en texto
+                String result = chatResponse.getResult().getOutput().getText();
 
-    @GetMapping("/image")
-    public String multimodalityURL() throws Exception {
+                return result;
+        }
 
-        UserMessage userMessage = UserMessage.builder()
-                .text("¿Explicame que ves en esta imagen? y si pertenece a una pelicula")
-                .media(new Media(MimeTypeUtils.IMAGE_JPEG, new URI(
-                        "https://media.istockphoto.com/id/1186954832/es/foto/peque%C3%B1o-gatito-negro-jugando-y-disfruta-con-bola-naranja-en-la-sala-de-estar-de-la-casa.jpg?s=612x612&w=0&k=20&c=JuJ1cJegjH7GqrPkwmhVq77JOSLyJfE3fz5Z_8Fbq2k=")
-                        .toURL().toURI()))
-                .build();
+        @GetMapping("/image")
+        public String multimodalityURL() throws Exception {
 
-        ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
+                UserMessage userMessage = UserMessage.builder()
+                                .text("¿Explicame que ves en esta imagen? y si pertenece a una pelicula")
+                                .media(new Media(MimeTypeUtils.IMAGE_JPEG, new URI(
+                                                "https://media.istockphoto.com/id/1186954832/es/foto/peque%C3%B1o-gatito-negro-jugando-y-disfruta-con-bola-naranja-en-la-sala-de-estar-de-la-casa.jpg?s=612x612&w=0&k=20&c=JuJ1cJegjH7GqrPkwmhVq77JOSLyJfE3fz5Z_8Fbq2k=")
+                                                .toURL().toURI()))
+                                .build();
 
-        String result = chatResponse.getResult().getOutput().getText();
+                ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
 
-        return result;
-    }
+                String result = chatResponse.getResult().getOutput().getText();
 
-    @GetMapping("/image2")
-    public String multiModalityURL2() throws Exception {
-        UserMessage userMessage = UserMessage.builder()
-                .text("Explicame que ves en cada imagen? dime si es de una pelicula e inventa una historia de ambos")
-                .media(List.of(
-                        // Primera imagen desde URL
-                        new Media(MimeTypeUtils.IMAGE_JPEG, new URI(
-                                "https://img.europapress.es/fotoweb/fotonoticia_20220412165352_1200.jpg")
-                                .toURL().toURI()),
-                        // Segunda imagen desde otra URL
-                        new Media(MimeTypeUtils.IMAGE_JPEG, new URI(
-                                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkr4crv5vRotmYd78_VghLFcnM73R-9CES1g&s")
-                                .toURL().toURI())))
-                .build();
+                return result;
+        }
 
-        ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
+        @GetMapping("/image2")
+        public String multiModalityURL2() throws Exception {
+                UserMessage userMessage = UserMessage.builder()
+                                .text("Explicame que ves en cada imagen? dime si es de una pelicula e inventa una historia de ambos")
+                                .media(List.of(
+                                                // Primera imagen desde URL
+                                                new Media(MimeTypeUtils.IMAGE_JPEG, new URI(
+                                                                "https://img.europapress.es/fotoweb/fotonoticia_20220412165352_1200.jpg")
+                                                                .toURL().toURI()),
+                                                // Segunda imagen desde otra URL
+                                                new Media(MimeTypeUtils.IMAGE_JPEG, new URI(
+                                                                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkr4crv5vRotmYd78_VghLFcnM73R-9CES1g&s")
+                                                                .toURL().toURI())))
+                                .build();
 
-        String result = chatResponse.getResult().getOutput().getText();
+                ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
 
-        return result;
-    }
+                String result = chatResponse.getResult().getOutput().getText();
 
-    @GetMapping("/upload")
-    public String multiModalityUpload(@RequestParam("image") MultipartFile imageFile) throws Exception {
-        UserMessage userMessage = UserMessage.builder()
-                .text("Explicame que ves en esta imagen? e inventame una historia")
-                .media(List.of(
-                        new Media(MimeTypeUtils.IMAGE_JPEG, new ByteArrayResource(imageFile.getBytes()))))
-                .build();
+                return result;
+        }
 
-        ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
+        @GetMapping("/upload")
+        public String multiModalityUpload(@RequestParam("image") MultipartFile imageFile) throws Exception {
+                UserMessage userMessage = UserMessage.builder()
+                                .text("Explicame que ves en esta imagen? e inventame una historia")
+                                .media(List.of(
+                                                new Media(MimeTypeUtils.IMAGE_JPEG,
+                                                                new ByteArrayResource(imageFile.getBytes()))))
+                                .build();
 
-        String description = chatResponse.getResult().getOutput().getText();
+                ChatResponse chatResponse = openAiChatModel.call(new Prompt(List.of(userMessage)));
 
-        // Con la descripción generada, le pedimos al modelo de imagen que cree un
-        // avatar/portada en base a esa historia
-        String url = openAiImageModel.call(
-                new ImagePrompt("Generame un avatar o portada de esta descripción: " + description,
-                        OpenAiImageOptions.builder()
-                                .model("dall-e-3")
-                                .quality("hd")
-                                .N(1)
-                                .height(1024)
-                                .width(1024)
-                                .build()))
-                .getResult().getOutput().getUrl(); // Obtenemos la URL de la imagen generada
+                String description = chatResponse.getResult().getOutput().getText();
 
-        return url;
-    }
+                // Con la descripción generada, le pedimos al modelo de imagen que cree un
+                // avatar/portada en base a esa historia
+                String url = openAiImageModel.call(
+                                new ImagePrompt("Generame un avatar o portada de esta descripción: " + description,
+                                                OpenAiImageOptions.builder()
+                                                                .model("dall-e-3")
+                                                                .quality("hd")
+                                                                .N(1)
+                                                                .height(1024)
+                                                                .width(1024)
+                                                                .build()))
+                                .getResult().getOutput().getUrl(); // Obtenemos la URL de la imagen generada
+
+                return url;
+        }
 
 }

@@ -31,6 +31,7 @@ import mx.txalcala.springia.dtos.ResponseDTO;
 @RequiredArgsConstructor
 public class ChatController {
 
+    // Modelo de ChatBot: Chat-GPT
     private final OpenAiChatModel openAiChatModel;
     private final ChatHistory chatHistory;
     private final ChatMemory chatMemory;
